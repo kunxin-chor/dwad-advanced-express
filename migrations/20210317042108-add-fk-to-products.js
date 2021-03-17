@@ -17,7 +17,16 @@ exports.setup = function(options, seedLink) {
 exports.up =  function(db) {
   return db.addColumn('products', 'category_id', {
       type: 'int',
-      notNull : true
+      notNull : true,
+      foreignKey: {
+          name: 'product_category_fk',
+          table: 'categories',
+          rules: {
+              onDelete:'cascade',
+              onUpdate:'restrict'
+          },
+          mapping: 'id'
+      }
   })
 }
 
