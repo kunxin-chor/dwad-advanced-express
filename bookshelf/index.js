@@ -1,8 +1,10 @@
 // Setting up the database connection
 const knex = require('knex')({
-  client: 'sqlite3',
+  client: 'mysql',
   connection: {
-    filename: 'dev.db'
+    user: 'foo',
+    password: 'bar',
+    database: 'organic'
   }
 })
 const bookshelf = require('bookshelf')(knex)
