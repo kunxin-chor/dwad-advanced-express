@@ -41,7 +41,6 @@ router.post('/create', async (req, res) => {
             let {tags, ...productData} = form.data;
             const product = new Product(productData);
             await product.save();
-            await product.refresh();
             // save the many to many relationship
             if (tags) {
                 await product.tags().attach(tags.split(","));
