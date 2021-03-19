@@ -18,7 +18,7 @@ router.get('/', async (req, res) => {
 
 router.get('/create', async (req, res) => {
 
-     const allCategories = await Category.fetchAll().map((category)=>{
+    const allCategories = await Category.fetchAll().map((category)=>{
         return [category.get('id'), category.get('name')];
     })
 
