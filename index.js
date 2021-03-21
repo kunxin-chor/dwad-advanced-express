@@ -4,6 +4,7 @@ const wax = require("wax-on");
 const session = require('express-session');
 const flash = require('connect-flash');
 const csrf = require('csurf')
+
 require("dotenv").config();
 
 // create an instance of express app
@@ -52,15 +53,23 @@ app.use(function(req,res,next){
     next();
 })
 
+// Share CSRF with hbs files
+app.use(function(req,res,next){
+    res.locals.csrfToken = req.csrfToken();
+    next();
+})
+
 // import in routes
 const landingRoutes = require('./routes/landing');
 const productRoutes = require('./routes/products');
 const userRoutes = require('./routes/users');
+const cloudinaryRoutes = require('./routes/cloudinary')
 
 async function main() {
     app.use('/', landingRoutes);
     app.use('/products', productRoutes);
     app.use('/users', userRoutes);
+    app.use('/cloudinary', cloudinaryRoutes);
 }
 
 main();

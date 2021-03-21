@@ -5,8 +5,10 @@
 <p>Please login with your account below!</p>
 
 <form method="POST">
-{{{form}}}
-<input type="submit" class="btn btn-primary" value="Login"/>
+    
+    <input type="hidden" name="_csrf" value="{{csrfToken}}" />
+    {{{form}}}
+    <input type="submit" class="btn btn-primary" value="Login" />
 </form>
 {{/block}}
 
