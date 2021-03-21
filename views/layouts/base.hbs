@@ -14,24 +14,58 @@
 </head>
 
 <body>
+
+
     <section class="container">
+        <!-- Grey with black text -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="#">Navbar w/ text</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText"
+                aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarText">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Pricing</a>
+                    </li>
+                </ul>
+                <div>
+                    {{#if user}}
+                    Hi, {{user.username}}
+
+                    <a href="/users/logout" class="ml-3 btn btn-primary btn-sm">Logout</a>
+
+                    {{else}}
+                    Hi, stranger
+                    <a href="/users/login" class="ml-3 btn btn-primary btn-sm">Login</a>
+                    {{/if}}
+                </div>
+            </div>
+        </nav>
 
         {{#if success_messages }}
-            {{#each success_messages}}
-            <div class="alert alert-success">
-                {{this}}
-            </div>
-            {{/each}}
+        {{#each success_messages}}
+        <div class="alert alert-success">
+            {{this}}
+        </div>
+        {{/each}}
         {{/if}}
 
         {{#if error_messages}}
-            {{#each error_messages}}
-            <div class="alert alert-danger">
-                {{this}}
-            </div>
-            {{/each}}
+        {{#each error_messages}}
+        <div class="alert alert-danger">
+            {{this}}
+        </div>
+        {{/each}}
         {{/if}}
-        
+
         {{#block 'content'}}
         {{/block}}
     </section>

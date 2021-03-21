@@ -25,8 +25,10 @@ var bootstrapField = function (name, object) {
     return '<div class="form-group">' + label + widget + error + '</div>';
 };
 
+
 const createProductForm = (categories, tags) => {
     return forms.create({
+       
         'name': fields.string({
             required: true,
             errorAfterField: true,

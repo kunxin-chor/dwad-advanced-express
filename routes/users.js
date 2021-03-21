@@ -8,6 +8,7 @@ const getHashedPassword = (password) => {
     return hash;
 }
 
+
 // import in the User model
 const { User } = require('../models');
 

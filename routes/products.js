@@ -1,6 +1,10 @@
 const express = require("express");
 const router = express.Router();
 
+// import in the CheckIfAuthenticated middleware
+const { checkIfAuthenticated } = require('../middlewares');
+
+
 // import in the Product model
 const { Product, Category, Tag } = require('../models');
 
@@ -16,7 +20,7 @@ router.get('/', async (req, res) => {
     })
 })
 
-router.get('/create', async (req, res) => {
+router.get('/create', checkIfAuthenticated,  async  (req, res) => {
 
     const allCategories = await Category.fetchAll().map((category)=>{
         return [category.get('id'), category.get('name')];
@@ -31,7 +35,7 @@ router.get('/create', async (req, res) => {
     })
 })
 
-router.post('/create', async (req, res) => {
+router.post('/create', checkIfAuthenticated, async (req, res) => {
     const productForm = createProductForm();
     productForm.handle(req, {
         'success': async (form) => {
