@@ -7,7 +7,6 @@
     {{{form}}}
     <div>
       <a href="#" class="btn btn-primary" id="upload_widget">Upload</a>
-      <input type="hidden" name="image_url" id="image_url"/>
       <img src="" style="display:none" id="uploaded_image"/>
     </div>
     <input type="submit" value="Add Product" class="btn btn-primary"/>
@@ -38,6 +37,13 @@ var myWidget = cloudinary.createUploadWidget({
   }, (error, result) => {
     if (!error && result && result.event === "success") {
       console.log('Done! Here is the image info: ', result.info);
+      // hide the upload widget 
+      document.querySelector('#upload_widget').style.display="none";
+
+      // display the image
+      document.querySelector('#id_image_url').value = result.info.url;
+      document.querySelector('#uploaded_image').src = result.info.url;
+      document.querySelector('#uploaded_image').style.display = 'inline';
     }
   }
 )
