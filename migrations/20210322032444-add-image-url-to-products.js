@@ -15,13 +15,14 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return null;
+  return db.addColumn('products', 'image_url', {
+    type:'string',
+    length:255
+});;
 };
 
 exports.down = function(db) {
-  return  db.addColumn('products', 'category_id', {
-      'image_url': {type: 'string', length:255}
-  });
+  return  null;
 };
 
 exports._meta = {

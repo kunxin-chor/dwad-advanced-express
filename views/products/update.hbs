@@ -3,9 +3,62 @@
 {{#block 'content'}}
 <h1>Update Product: {{product.name}}</h1>
 <form method="POST">
+    <input type="hidden" name="_csrf" value="{{csrfToken}}"/>
     {{{form}}}
-    <input type="submit" value="Update Product" class="btn btn-primary"/>
-    {{/block}}
+    <div>     
+        {{#if product.image_url}}
+        <img src="{{product.image_url}}" id="uploaded_image" />
+        {{else}}
+        <img src="" style="display:none" id="uploaded_image" />
+        {{/if}}
+    </div>
+    <div>
+           <a href="#" class="btn btn-primary" id="upload_widget">Upload</a>
+    </div>
+    <input type="submit" value="Update Product" class="btn btn-primary" />
 </form>
-
+{{/block}}
 {{/extends}}
+
+{{#block js}}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"
+    integrity="sha512-bZS47S7sPOxkjU/4Bt0zrhEtWx0y0CRkhEp8IckzK+ltifIIE9EMIMTuT/mEzoIMewUINruDBIR/jJnbguonqQ=="
+    crossorigin="anonymous"></script>
+<script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
+<script>
+    function generateSignature(callback, params_to_sign) {
+        axios.get('/cloudinary/sign', {
+            params: {
+                params_to_sign
+            }
+        }).then(function (response) {
+            callback(response.data);
+        })
+    }
+
+    var myWidget = cloudinary.createUploadWidget({
+        cloudName: '{{cloudinaryName}}',
+        apiKey: '{{cloudinaryApiKey}}',
+        uploadPreset: '{{cloudinaryPreset}}',
+        uploadSignature: generateSignature
+    }, (error, result) => {
+        if (!error && result && result.event === "success") {
+            console.log('Done! Here is the image info: ', result.info);
+            // hide the upload widget 
+            document.querySelector('#upload_widget').style.display = "none";
+
+            // display the image
+            document.querySelector('#id_image_url').value = result.info.url;
+            document.querySelector('#uploaded_image').src = result.info.url;
+            document.querySelector('#uploaded_image').style.display = 'inline';
+        }
+    }
+    )
+
+    document.getElementById("upload_widget").addEventListener("click", function () {
+        myWidget.open();
+    }, false);
+</script>
+
+{{/block}}

@@ -13,23 +13,23 @@ const { bootstrapField, createProductForm } = require('../forms');
 
 router.get('/', async (req, res) => {
     let products = await Product.collection().fetch({
-        withRelated:['category']
+        withRelated: ['category']
     });
     res.render('products/index', {
         'products': products.toJSON()
     })
 })
 
-router.get('/create',  async  (req, res) => {
+router.get('/create', async (req, res) => {
 
-    const allCategories = await Category.fetchAll().map((category)=>{
+    const allCategories = await Category.fetchAll().map((category) => {
         return [category.get('id'), category.get('name')];
     })
 
-    const allTags = await Tag.fetchAll().map( tag => [tag.get('id'), tag.get('name')]);
+    const allTags = await Tag.fetchAll().map(tag => [tag.get('id'), tag.get('name')]);
 
     const productForm = createProductForm(allCategories, allTags);
-   
+
     res.render('products/create', {
         'form': productForm.toHTML(bootstrapField),
         cloudinaryName: process.env.CLOUDINARY_NAME,
@@ -38,14 +38,14 @@ router.get('/create',  async  (req, res) => {
     })
 })
 
-router.post('/create', checkIfAuthenticated, async (req, res) => {
+router.post('/create', async (req, res) => {
     const productForm = createProductForm();
     productForm.handle(req, {
         'success': async (form) => {
             // seperate out tags from the other product data
             // as not to casue an error when we create
             // the new product
-            let {tags, ...productData} = form.data;
+            let { tags, ...productData } = form.data;
             const product = new Product(productData);
             await product.save();
             // save the many to many relationship
@@ -57,7 +57,8 @@ router.post('/create', checkIfAuthenticated, async (req, res) => {
         },
         'error': async (form) => {
             res.render('products/create', {
-                'form': form.toHTML(bootstrapField)
+                'form': form.toHTML(bootstrapField),
+
             })
         }
     })
@@ -70,13 +71,13 @@ router.get('/:product_id/update', async (req, res) => {
         'id': parseInt(productId)
     }).fetch({
         required: true,
-        withRelated:['tags', 'category']
+        withRelated: ['tags', 'category']
     });
-    
-    const allTags = await Tag.fetchAll().map( tag => [tag.get('id'), tag.get('name')]);
+
+    const allTags = await Tag.fetchAll().map(tag => [tag.get('id'), tag.get('name')]);
 
     // fetch all the categories
-    const allCategories = await Category.fetchAll().map((category)=>{
+    const allCategories = await Category.fetchAll().map((category) => {
         return [category.get('id'), category.get('name')];
     })
 
@@ -90,39 +91,42 @@ router.get('/:product_id/update', async (req, res) => {
 
     // fill in the multi-select for the tags
     let selectedTags = await product.related('tags').pluck('id');
-    productForm.fields.tags.value= selectedTags;
+    productForm.fields.tags.value = selectedTags;
 
     res.render('products/update', {
         'form': productForm.toHTML(bootstrapField),
-        'product': product
+        'product': product.toJSON(),
+        cloudinaryName: process.env.CLOUDINARY_NAME,
+        cloudinaryApiKey: process.env.CLOUDINARY_API_KEY,
+        cloudinaryPreset: process.env.CLOUDINARY_UPLOAD_PRESET
     })
 
 })
 
 router.post('/:product_id/update', async (req, res) => {
 
-   // fetch the product that we want to update
+    // fetch the product that we want to update
     const product = await Product.where({
         'id': req.params.product_id
     }).fetch({
         required: true,
-        withRelated:['tags']
+        withRelated: ['tags']
     });
 
     // process the form
     const productForm = createProductForm();
     productForm.handle(req, {
         'success': async (form) => {
-            let { tags, ...productData} = form.data;
+            let { tags, ...productData } = form.data;
             product.set(productData);
             product.save();
             // update the tags
-            
+
             let tagIds = tags.split(',');
             let existingTagIds = await product.related('tags').pluck('id');
 
             // remove all the tags that aren't selected anymore
-            let toRemove = existingTagIds.filter( id => tagIds.includes(id) === false);
+            let toRemove = existingTagIds.filter(id => tagIds.includes(id) === false);
             await product.tags().detach(toRemove);
 
             // add in all the tags selected in the form
@@ -138,7 +142,7 @@ router.post('/:product_id/update', async (req, res) => {
     })
 })
 
-router.get('/:product_id/delete', async(req,res)=>{
+router.get('/:product_id/delete', async (req, res) => {
     // fetch the product that we want to delete
     const product = await Product.where({
         'id': req.params.product_id
@@ -152,7 +156,7 @@ router.get('/:product_id/delete', async(req,res)=>{
 
 });
 
-router.post('/:product_id/delete', async(req,res)=>{
+router.post('/:product_id/delete', async (req, res) => {
     // fetch the product that we want to delete
     const product = await Product.where({
         'id': req.params.product_id
