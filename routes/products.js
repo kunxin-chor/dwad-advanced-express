@@ -12,9 +12,27 @@ const { Product, Category, Tag } = require('../models');
 const { bootstrapField, createProductForm } = require('../forms');
 
 router.get('/', async (req, res) => {
-    let products = await Product.collection().fetch({
-        withRelated: ['category']
-    });
+    // let products = await Product.collection().fetch({
+    //     withRelated: ['category']
+    // });
+
+    let q = Product.collection();
+
+    if (req.query.name) {
+        q = q.where('name', 'like', req.query.name)
+    }
+    
+    if (req.query.category) {
+        q = q.query('join', 'categories', 'category_id', 'categories.id')
+            .where('categories.name', 'like', req.query.category)
+    }
+
+
+    let products = await q.fetch({
+         withRelated: ['category']
+    })
+
+
     res.render('products/index', {
         'products': products.toJSON()
     })
