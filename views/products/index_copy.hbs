@@ -2,7 +2,25 @@
 
 {{#block 'content'}}
 <form method="GET">
-   {{{form}}}
+    <div>
+        <label class="form-label">Name</label>
+        <input class="form-control" type="text" name="name"/>
+    </div>
+
+    <div>
+        <label class="form-label">Min. Cost</label>
+        <input type="text" class="form-control" name="min_cost"/>
+    </div>
+
+       <div>
+        <label class="form-label">Max. Cost</label>
+        <input class="form-control" type="text" name="max_cost"/>
+    </div>
+
+    <div>
+        <label class="form-label">Category:</label>
+        <input class="form-control" type="text" name="category">
+    </div>
 
     <input type="submit" class="mb-3 mt-3 btn btn-primary" value="Search"/>
 

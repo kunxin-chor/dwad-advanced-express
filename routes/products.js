@@ -9,32 +9,74 @@ const { checkIfAuthenticated } = require('../middlewares');
 const { Product, Category, Tag } = require('../models');
 
 // import in the Forms
-const { bootstrapField, createProductForm } = require('../forms');
+const { bootstrapField, createProductForm, createSearchForm } = require('../forms');
 
 router.get('/', async (req, res) => {
     // let products = await Product.collection().fetch({
     //     withRelated: ['category']
     // });
 
-    let q = Product.collection();
-
-    if (req.query.name) {
-        q = q.where('name', 'like', req.query.name)
-    }
-    
-    if (req.query.category) {
-        q = q.query('join', 'categories', 'category_id', 'categories.id')
-            .where('categories.name', 'like', req.query.category)
-    }
-
-
-    let products = await q.fetch({
-         withRelated: ['category']
+    const allCategories = await Category.fetchAll().map((category) => {
+        return [category.get('id'), category.get('name')];
     })
+    allCategories.unshift([0, '----']);
 
+    const allTags = await Tag.fetchAll().map(tag => [tag.get('id'), tag.get('name')]);
 
-    res.render('products/index', {
-        'products': products.toJSON()
+    console.log(req.query);
+    let q = Product.collection();
+    let searchForm = createSearchForm(allCategories, allTags);
+
+    searchForm.handle(req, {
+        'empty': async (form) => {
+            let products = await q.fetch({
+                withRelated: ['category']
+            })
+            res.render('products/index', {
+                'products': products.toJSON(),
+                'form': form.toHTML(bootstrapField)
+            })
+        },
+        'error': async (form) => {
+            let products = await q.fetch({
+                withRelated: ['category']
+            })
+            res.render('products/index', {
+                'products': products.toJSON(),
+                'form': form.toHTML(bootstrapField)
+            })
+        },
+        'success': async (form) => {
+            if (form.data.name) {
+                q = q.where('name', 'like', '%' + req.query.name + '%')
+            }
+
+            if (form.data.category) {
+                q = q.query('join', 'categories', 'category_id', 'categories.id')
+                    .where('categories.name', 'like', '%' + req.query.category + '%')
+            }
+
+            if (form.data.min_cost) {
+                q = q.where('cost', '>=', req.query.min_cost)
+            }
+
+            if (form.data.max_cost) {
+                q = q.where('cost', '<=', req.query.max_cost);
+            }
+
+            if (form.data.tags) {
+                q.query('join', 'products_tags', 'products.id', 'product_id')
+                .where('tag_id', 'in', form.data.tags.split(','))
+            }
+
+            let products = await q.fetch({
+                withRelated: ['category']
+            })
+            res.render('products/index', {
+                'products': products.toJSON(),
+                'form': form.toHTML(bootstrapField)
+            })
+        }
     })
 })
 
@@ -88,7 +130,7 @@ router.get('/:product_id/update', async (req, res) => {
     const product = await Product.where({
         'id': parseInt(productId)
     }).fetch({
-        required: true,
+        require: true,
         withRelated: ['tags', 'category']
     });
 
@@ -179,7 +221,7 @@ router.post('/:product_id/delete', async (req, res) => {
     const product = await Product.where({
         'id': req.params.product_id
     }).fetch({
-        required: true
+        require: true
     });
     await product.destroy();
     res.redirect('/products')
