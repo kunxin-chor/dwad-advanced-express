@@ -88,6 +88,7 @@ router.get('/:product_id/update', async (req, res) => {
     productForm.fields.cost.value = product.get('cost');
     productForm.fields.description.value = product.get('description');
     productForm.fields.category_id.value = product.get('category_id');
+    productForm.fields.image_url.value = product.get('image_url');
 
     // fill in the multi-select for the tags
     let selectedTags = await product.related('tags').pluck('id');
