@@ -4,26 +4,21 @@ const router = express.Router();
 // import in the CheckIfAuthenticated middleware
 const { checkIfAuthenticated } = require('../middlewares');
 
-
 // import in the Product model
 const { Product, Category, Tag } = require('../models');
 
 // import in the Forms
 const { bootstrapField, createProductForm, createSearchForm } = require('../forms');
 
-router.get('/', async (req, res) => {
-    // let products = await Product.collection().fetch({
-    //     withRelated: ['category']
-    // });
+// import in the DAL
+const dataLayer = require('../dal/products')
 
-    const allCategories = await Category.fetchAll().map((category) => {
-        return [category.get('id'), category.get('name')];
-    })
+router.get('/', async (req, res) => {
+    const allCategories = await dataLayer.getAllCategories();
     allCategories.unshift([0, '----']);
 
-    const allTags = await Tag.fetchAll().map(tag => [tag.get('id'), tag.get('name')]);
+    const allTags = await dataLayer.getAllTags();
 
-    console.log(req.query);
     let q = Product.collection();
     let searchForm = createSearchForm(allCategories, allTags);
 
@@ -99,7 +94,12 @@ router.get('/create', async (req, res) => {
 })
 
 router.post('/create', async (req, res) => {
-    const productForm = createProductForm();
+     const allCategories = await Category.fetchAll().map((category) => {
+        return [category.get('id'), category.get('name')];
+    })
+
+    const allTags = await Tag.fetchAll().map(tag => [tag.get('id'), tag.get('name')]);
+    const productForm = createProductForm(allCategories, allTags);
     productForm.handle(req, {
         'success': async (form) => {
             // seperate out tags from the other product data
@@ -127,12 +127,7 @@ router.post('/create', async (req, res) => {
 router.get('/:product_id/update', async (req, res) => {
     // retrieve the product
     const productId = req.params.product_id
-    const product = await Product.where({
-        'id': parseInt(productId)
-    }).fetch({
-        require: true,
-        withRelated: ['tags', 'category']
-    });
+    const product = await dataLayer.getProductByID(productId);
 
     const allTags = await Tag.fetchAll().map(tag => [tag.get('id'), tag.get('name')]);
 
