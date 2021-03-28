@@ -6,6 +6,7 @@ const FileStore = require('session-file-store')(session);
 const flash = require('connect-flash');
 const csrf = require('csurf')
 
+
 require("dotenv").config();
 
 // create an instance of express app
@@ -29,6 +30,7 @@ app.use(
     })
 );
 
+
 // set up sessions
 app.use(session({
     store: new FileStore(),
@@ -43,7 +45,15 @@ app.use(session({
 app.use(flash());
 
 // enable CSRF
-app.use(csrf());
+// we use our own CSRF proxy so that some routes are
+const csrfInstance = csrf();
+app.use(function (req, res, next) {
+  // exclude /checkout/process_payment for CSRF
+  if (req.url === '/checkout/process_payment') {
+      return next()
+  }
+  csrfInstance(req, res, next)
+})
 
 // Register Flash middleware
 app.use(function (req, res, next) {
@@ -60,7 +70,10 @@ app.use(function(req,res,next){
 
 // Share CSRF with hbs files
 app.use(function(req,res,next){
-    res.locals.csrfToken = req.csrfToken();
+    // don't set CSRF token if it is not included
+    if (req.csrfToken) {    
+          res.locals.csrfToken = req.csrfToken();
+    }  
     next();
 })
 
@@ -70,6 +83,7 @@ const productRoutes = require('./routes/products');
 const userRoutes = require('./routes/users');
 const cloudinaryRoutes = require('./routes/cloudinary');
 const shoppingCartRoutes = require('./routes/shoppingCart');
+const checkoutRoutes = require('./routes/checkout');
 
 async function main() {
     app.use('/', landingRoutes);
@@ -77,6 +91,7 @@ async function main() {
     app.use('/users', userRoutes);
     app.use('/cloudinary', cloudinaryRoutes);
     app.use('/cart', shoppingCartRoutes);
+    app.use('/checkout', checkoutRoutes);
 }
 
 main();

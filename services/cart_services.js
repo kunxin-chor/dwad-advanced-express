@@ -37,8 +37,7 @@ class CartServices {
         let cartItem = await cartDataLayer
             .getCartItemByUserAndProduct(this.user_id, productId); 
         if (cartItem) {
-            console.log("found");
-            cartItem.set('quantity', newQuantity);
+              cartItem.set('quantity', newQuantity);
             await cartItem.save();
             return cartItem;
         }
