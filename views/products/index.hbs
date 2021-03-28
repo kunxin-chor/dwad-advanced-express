@@ -3,11 +3,7 @@
 {{#block 'content'}}
 <form method="GET">
    {{{form}}}
-
     <input type="submit" class="mb-3 mt-3 btn btn-primary" value="Search"/>
-
-
-
 </form>
 
 
@@ -43,6 +39,7 @@
                 {{this.description}}
             </td>
             <td>
+                <a href="/cart/{{this.id}}/add" class="btn btn-success btn-sm">Add to cart</a>
                 <a href="/products/{{this.id}}/update" class="btn btn-primary btn-sm">Update</a>
                 <a href="/products/{{this.id}}/delete" class="btn btn-danger btn-sm">Delete</a>
             </td>

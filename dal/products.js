@@ -15,7 +15,7 @@ const getProductByID = async (productId) => {
     return await Product.where({
         'id': parseInt(productId)
     }).fetch({
-        require: true,
+        require: false,
         withRelated: ['tags', 'category']
     });
 }
