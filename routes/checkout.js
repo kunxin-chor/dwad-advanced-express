@@ -11,7 +11,9 @@ router.get('/', async (req, res) => {
     // get all the items from the cart
     let items = await cart.getCart();
 
+    // step 1 - create line items
     let lineItems = [];
+    let meta = [];
     for (let item of items) {
         const lineItem = {
             'name': item.related('product').get('name'),
@@ -23,10 +25,15 @@ router.get('/', async (req, res) => {
             lineItem['images'] = [item.related('product').get('image_url')]
         }
         lineItems.push(lineItem);
+        // save the quantity data along with the product id
+        meta.push({
+            'product_id' : item.get('product_id'),
+            'quantity': item.get('quantity')
+        })
     }
 
-    let metaData = JSON.stringify(Object.values(cart));
-
+    // step 2 - create stripe payment
+    let metaData = JSON.stringify(meta);
     const payment = {
         payment_method_types: ['card'],
         line_items: lineItems,
@@ -37,6 +44,7 @@ router.get('/', async (req, res) => {
         }
     }
 
+    // step 3: register the session
     let stripeSession = await Stripe.checkout.sessions.create(payment)
     res.render('checkout/checkout', {
         'sessionId': stripeSession.id, // 4. Get the ID of the session
