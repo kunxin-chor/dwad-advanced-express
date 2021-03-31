@@ -2,15 +2,16 @@ const express = require('express')
 const router = express.Router();
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
-const {checkIfAuthenticatedJWT} = require('../../middlewares')
+const { checkIfAuthenticatedJWT } = require('../../middlewares');
+const { BlacklistedToken } = require('../../models');
 
-const generateAccessToken = (user) => {
+const generateAccessToken = (user, secret, expiresIn) => {
     return jwt.sign({
-        'username': user.get('username'),
-        'id': user.get('id'),
-        'email': user.get('email')
-    }, process.env.TOKEN_SECRET, {
-        expiresIn: "1h"
+        'username': user.username,
+        'id': user.id,
+        'email': user.email
+    }, secret, {
+        'expiresIn': expiresIn
     });
 }
 
@@ -30,20 +31,81 @@ router.post('/login', async (req, res) => {
     });
 
     if (user && user.get('password') == getHashedPassword(req.body.password)) {
-        let accessToken = generateAccessToken(user);
+        const userObject = {
+            'username': user.get('user'),
+            'email': user.get('email'),
+            'id': user.get('id')
+        }
+        let accessToken = generateAccessToken(userObject, process.env.TOKEN_SECRET, '15m');
+        let refreshToken = generateAccessToken(userObject, process.env.REFRESH_TOKEN_SECRET, '7d');
         res.send({
-            accessToken
+            accessToken, refreshToken
         })
     } else {
         res.send({
-            'error':'Wrong email or password'
+            'error': 'Wrong email or password'
         })
     }
 })
 
-router.get('/profile', checkIfAuthenticatedJWT, async(req,res)=>{
+router.post('/refresh', async (req, res) => {
+    let refreshToken = req.body.refreshToken;
+    if (!refreshToken) {
+        res.sendStatus(401);
+    }
+
+    // check if the refresh token has been black listed
+    let blacklistedToken = await BlacklistedToken.where({
+        'token': refreshToken
+    }).fetch({
+        require: false
+    })
+
+
+    // if the refresh token has already been blacklisted
+    if (blacklistedToken) { 
+        res.status(401);
+        return res.send('The refresh token has already expired')
+    }
+
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+        if (err) {
+            return res.sendStatus(403);
+        }
+
+        let accessToken = generateAccessToken(user, process.env.TOKEN_SECRET, '15m');
+        res.send({
+            accessToken
+        });
+    })
+})
+
+router.get('/profile', checkIfAuthenticatedJWT, async (req, res) => {
     const user = req.user;
     res.send(user);
+})
+
+router.post('/logout', async (req, res) => {
+    let refreshToken = req.body.refreshToken;
+    if (!refreshToken) {
+        res.sendStatus(401);
+    } else {
+            jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET,async (err, user) => {
+            if (err) {
+                return res.sendStatus(403);
+            }
+
+            const token = new BlacklistedToken();
+            token.set('token', refreshToken);
+            token.set('date_created', new Date()); // use current date
+            await token.save();
+            res.send({
+                'message': 'logged out'
+            })
+        })
+
+    }
+
 })
 
 module.exports = router;

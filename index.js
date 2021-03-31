@@ -44,7 +44,7 @@ app.use(session({
 app.use(flash());
 
 // enable CSRF
-// we use our own CSRF proxy so that some routes are
+// we use our own CSRF proxy so that some routes are excluded from CSRF
 const csrfInstance = csrf();
 app.use(function (req, res, next) {
   // exclude /checkout/process_payment for CSRF
