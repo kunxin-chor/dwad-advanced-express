@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start":"node index.js"
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
@@ -24,6 +24,7 @@
     "csurf": "^1.11.0",
     "db-migrate": "^0.11.12",
     "db-migrate-mysql": "^2.1.2",
+    "db-migrate-pg": "^1.2.2",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
@@ -32,6 +33,7 @@
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.95.2",
     "multer": "^1.4.2",
+    "pg": "^8.5.1",
     "session-file-store": "^1.5.0",
     "stripe": "^8.140.0",
     "wax-on": "^1.2.2"
