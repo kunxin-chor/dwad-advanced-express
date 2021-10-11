@@ -1,5 +1,5 @@
 
-const { CartItem } = require('../models');
+
 const cartDataLayer = require('../dal/cart_items')
 
 class CartServices {
@@ -7,51 +7,28 @@ class CartServices {
         this.user_id = user_id;
     }
 
-    async getCart() {
-        let allCartItems = await cartDataLayer.getCartItems(this.user_id);
-        return allCartItems;
-    }
-
     async addToCart(productId, quantity) {
+        // check if uuser has added the product to the shopping cart before
+        let cartItem = await cartDataLayer.getCartItemByUserAndProduct(this.user_id, productId);
 
-        // check if the item already exist
-        let cartItem = await cartDataLayer.getCartItemByUserAndProduct(this.user_id, productId)
-
-        // the cart item does not exist
-        if (!cartItem) {
-            cartItem = new CartItem({
-                'user_id': this.user_id,
-                'product_id': productId,
-                'quantity': quantity
-            })
-        } else {
-            cartItem.set('quantity', cartItem.get('quantity') + quantity);
-        }
-        await cartItem.save();
-        return cartItem;
-    }
-
-    async setQuantity(productId, newQuantity) {
-        console.log(productId, newQuantity);
-        // check if the item already exist
-        let cartItem = await cartDataLayer
-            .getCartItemByUserAndProduct(this.user_id, productId); 
         if (cartItem) {
-              cartItem.set('quantity', newQuantity);
-            await cartItem.save();
-            return cartItem;
+            return await cartDataLayer.updateQuantity(this.user_id, productId, cartItem.get('quantity') + 1);
+        } else {
+            let newCartItem = cartDataLayer.createCartItem(this.user_id, productId, quantity);
+            return newCartItem;
         }
-        return null;
     }
 
     async remove(productId) {
-        let cartItem = await cartDataLayer
-            .getCartItemByUserAndProduct(this.user_id, productId);
-        if (cartItem) {
-            await cartItem.destroy();
-            return true;
-        }
-        return false;
+        return await cartDataLayer.removeFromCart(this.user_id, productId);
+    }
+
+    async setQuantity(productId, quantity) {
+        return await cartDataLayer.updateQuantity(this.user_id, productId, quantity);
+    }
+
+    async getCart() {
+        return await cartDataLayer.getCart(this.user_id);
     }
 }
 

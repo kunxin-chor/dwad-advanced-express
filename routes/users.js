@@ -61,7 +61,9 @@ router.post('/login', async (req, res) => {
             // ...find the user by email and password
             let user = await User.where({
                 'email': req.body.email
-            }).fetch();
+            }).fetch({
+                'require':false
+            });
 
             if (!user) {
                 req.flash("error_messages", "Sorry, the authentication details you provided does not work.")
